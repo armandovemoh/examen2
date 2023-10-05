@@ -109,22 +109,24 @@ public class Programa {
 
                 if (pokemonSecreto.getAtaques().stream()
                         .anyMatch(ataque -> ataque.equalsIgnoreCase(ataqueAdivinado))) {
-                    // La respuesta del jugador es correcta
+                	
+                	eliminarPokemonSinAtaqueCorrecto(pokemonRestantes, ataqueAdivinado);
                     System.out.println("¡Respuesta correcta!");
                     ataquesAdivinados.add(ataqueAdivinado);
                     numeroDePreguntas++;
 
-                    // Imprimir los Pokémon restantes después de adivinar el ataque
+                    
                     imprimirListaPokemonRestantes(pokemonRestantes);
 
-                    // Resto del código
+                    
                 } else {
+                	eliminarPokemonSinAtaqueIncorrecto(pokemonRestantes, ataqueAdivinado);
                     System.out.println("Ataque de Pokémon incorrecto. Intente nuevamente.");
 
-                    // Imprimir los Pokémon restantes después de una respuesta incorrecta
+                    
                     imprimirListaPokemonRestantes(pokemonRestantes);
 
-                    // Resto del código
+                    
                 }
             } else {
                 System.out.println("Opción no válida. Por favor, seleccione 1 o 2.");
@@ -192,5 +194,16 @@ public class Programa {
 		scanner.close();
 	    System.out.println("Adios!");
 	    System.exit(0);
+	}
+	
+	private void eliminarPokemonSinAtaqueCorrecto(ArrayList<Pokemon> pokemonRestantes, String ataqueAdivinado) {
+	    pokemonRestantes.removeIf(pokemon -> 
+	        pokemon.getAtaques().stream().noneMatch(ataque -> ataque.equalsIgnoreCase(ataqueAdivinado.toLowerCase()))
+	    );
+	}
+	private void eliminarPokemonSinAtaqueIncorrecto(ArrayList<Pokemon> pokemonRestantes, String ataqueAdivinado) {
+	    pokemonRestantes.removeIf(pokemon -> 
+	        !pokemon.getAtaques().stream().noneMatch(ataque -> ataque.equalsIgnoreCase(ataqueAdivinado.toLowerCase()))
+	    );
 	}
 }
