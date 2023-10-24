@@ -4,16 +4,25 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
 import java.util.Random;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Scanner;
+import java.util.Random;
 
 public class Programa {
 	private Scanner scanner;
 	private ArrayList<String> opcionesTipo;
     private ArrayList<String> opcionesAtaque;
+    private Scanner scannerr;
+    private int partidasGanadas = 0;
+    private int partidasJugadas = 0;
 	
 	public Programa() {
         this.scanner = new Scanner(System.in); // Inicializa el scanner
         opcionesTipo = new ArrayList<>();
         opcionesAtaque = new ArrayList<>();
+        this.scanner = new Scanner(System.in);
     }
 
 	
@@ -57,16 +66,10 @@ public class Programa {
 	    int indicePokemonSecreto = random.nextInt(todosLosPokemon.size());
 	    Pokemon pokemonSecreto = todosLosPokemon.get(indicePokemonSecreto);
 	    
-	    for (Pokemon pokemon : todosLosPokemon) {
-	        String nombre = pokemon.getNombre();
-	        String tipo = pokemon.getTipo();
-	        String ataques = String.join(", ", pokemon.getAtaques());
-
-	        String formatted = String.format("%-20s :%-10s: %s", nombre, tipo, ataques);
-	        System.out.println(formatted);
-	    }
+	    
 	    
 	    Menu menu = new Menu();
+	 
 	    int numeroDePreguntas = 0;
 	    ArrayList<String> tiposAdivinados = new ArrayList<>();
         ArrayList<String> ataquesAdivinados = new ArrayList<>();
@@ -77,8 +80,35 @@ public class Programa {
         // Copia original de opciones disponibles
         ArrayList<String> opcionesTipoOriginal = new ArrayList<>(menu.getOpcionesTipo());
         ArrayList<String> opcionesAtaqueOriginal = new ArrayList<>(menu.getOpcionesAtaque());
+        
+       // menu.gestionarPerfiles();
+        /*System.out.print("Ingresa tu nombre de perfil: ");
+        String nombrePerfil = scanner.nextLine();
+        Perfil perfil = new Perfil(nombrePerfil);
+        perfil.cargarPerfil(); */
+        
+        System.out.print("Ingresa tu nombre de perfil: ");
+        String nombrePerfil = scanner.next() + ".txt";
+        Perfil perfil = new Perfil(nombrePerfil);
+        if (perfil.perfilExists()) {
+            perfil.cargarPerfil();
+        } else {
+            perfil.guardarPerfil();
+        }
 
+        
+        for (Pokemon pokemon : todosLosPokemon) {
+	        String nombre = pokemon.getNombre();
+	        String tipo = pokemon.getTipo();
+	        String ataques = String.join(", ", pokemon.getAtaques());
+
+	        String formatted = String.format("%-20s :%-10s: %s", nombre, tipo, ataques);
+	        System.out.println(formatted);
+	    }
+        
         while (intentos < MAX_INTENTOS) {
+        	
+        	perfil.guardarPerfil(); // Guarda el perfil al final
             int opcion = menu.mostrarMenu();
 
             if (opcion == 1) {
@@ -107,29 +137,29 @@ public class Programa {
 
                 boolean respuestaCorrecta = pokemonSecreto.getAtaques().contains(ataqueAdivinado.toLowerCase());
 
-                if (pokemonSecreto.getAtaques().stream()
-                        .anyMatch(ataque -> ataque.equalsIgnoreCase(ataqueAdivinado))) {
+                if (pokemonSecreto.getAtaques().stream().anyMatch(ataque -> ataque.equalsIgnoreCase(ataqueAdivinado))) {
+                    // La respuesta del jugador es correcta
                 	
-                	eliminarPokemonSinAtaqueCorrecto(pokemonRestantes, ataqueAdivinado);
+                	pokemonRestantes.removeIf(pokemon -> !pokemon.getAtaques().stream().anyMatch(ataque -> ataque.equalsIgnoreCase(ataqueAdivinado)));
                     System.out.println("¡Respuesta correcta!");
                     ataquesAdivinados.add(ataqueAdivinado);
                     numeroDePreguntas++;
 
-                    
+                    // Imprimir los Pokémon restantes después de adivinar el ataque
                     imprimirListaPokemonRestantes(pokemonRestantes);
 
-                    
+                    // Resto del código
                 } else {
-                	eliminarPokemonSinAtaqueIncorrecto(pokemonRestantes, ataqueAdivinado);
+                	pokemonRestantes.removeIf(pokemon -> pokemon.getAtaques().stream().anyMatch(ataque -> ataque.equalsIgnoreCase(ataqueAdivinado)));
                     System.out.println("Ataque de Pokémon incorrecto. Intente nuevamente.");
 
-                    
+                    // Imprimir los Pokémon restantes después de una respuesta incorrecta
                     imprimirListaPokemonRestantes(pokemonRestantes);
 
-                    
+                    // Resto del código
                 }
             } else {
-                System.out.println("Opción no válida. Por favor, seleccione 1 o 2.");
+                System.out.println("Opción no válida. Por favor, seleccione 1, 2, 3 o 4.");
             }
 
             intentos++;
@@ -141,21 +171,33 @@ public class Programa {
             
             if (respuestaCorrecta) {
                 System.out.println("¡Respuesta correcta!");
+                partidasGanadas++;
+                partidasJugadas++;
+                perfil.actualizarPerfil(partidasJugadas, partidasGanadas);
+
+               
+               
             } else {
                 System.out.println("Incorrecto. El Pokémon secreto era: " + pokemonSecreto.getNombre());
+                partidasJugadas++;
+                perfil.actualizarPerfil(partidasJugadas, partidasGanadas);
+              
             }
-            
+            perfil.incrementarPartidasJugadas();
             mostrarDespedida();
             int opcionFinal = scanner.nextInt();
             
             if (opcionFinal == 1) {
                 // Volver a jugar: reiniciar el juego
+            	 
                 ejecutar();
             } else if (opcionFinal == 2) {
                 // Cerrar el juego y decir adiós
+            	perfil.guardarPerfil();
                 cerrarJuego();
             } else {
                 System.out.println("Opción no válida. El juego se cerrará.");
+                perfil.guardarPerfil();
                 cerrarJuego();
             }
         }
@@ -183,6 +225,11 @@ public class Programa {
 	        System.out.println(formatted);
 	    }
 	}
+	
+	
+	
+	
+	
 	public static void mostrarDespedida() {
 	    System.out.println("\nGracias por jugar!");
 	    System.out.println("Que deseas hacer?");
@@ -194,16 +241,5 @@ public class Programa {
 		scanner.close();
 	    System.out.println("Adios!");
 	    System.exit(0);
-	}
-	
-	private void eliminarPokemonSinAtaqueCorrecto(ArrayList<Pokemon> pokemonRestantes, String ataqueAdivinado) {
-	    pokemonRestantes.removeIf(pokemon -> 
-	        pokemon.getAtaques().stream().noneMatch(ataque -> ataque.equalsIgnoreCase(ataqueAdivinado.toLowerCase()))
-	    );
-	}
-	private void eliminarPokemonSinAtaqueIncorrecto(ArrayList<Pokemon> pokemonRestantes, String ataqueAdivinado) {
-	    pokemonRestantes.removeIf(pokemon -> 
-	        !pokemon.getAtaques().stream().noneMatch(ataque -> ataque.equalsIgnoreCase(ataqueAdivinado.toLowerCase()))
-	    );
 	}
 }

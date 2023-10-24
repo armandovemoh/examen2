@@ -45,7 +45,7 @@ public class Menu {
     }
 
     public int mostrarMenu() {
-        System.out.println("¿Qué desea adivinar?");
+        System.out.println("¿Qué desea hacer?");
         System.out.println("1) De qué tipo es el Pokémon");
         System.out.println("2) Qué ataques tiene");
         return scanner.nextInt();
@@ -73,4 +73,37 @@ public class Menu {
         System.out.println("¿Cuál pokemon de la lista crees que es el pokemon secreto?");
         return scanner.nextLine();
     }
+
+    public void gestionarPerfiles() {
+	    System.out.println("¡Bienvenido al juego Adivina Quién Pokémon!");
+	    System.out.println("¿Qué deseas hacer?");
+	    System.out.println("1) Crear un nuevo perfil");
+	    System.out.println("2) Seleccionar un perfil existente");
+	    int opcion = scanner.nextInt();
+
+	    if (opcion == 1) {
+	        System.out.print("Ingresa tu nombre de perfil (con extensión .txt): ");
+	        String nombrePerfil = scanner.next(); // Agrega la extensión .txt
+	        Perfil perfil = new Perfil(nombrePerfil);
+	        perfil.cargarPerfil(); // Intenta cargar el perfil desde un archivo existente
+
+	        if (perfil.getNombre() != null) {
+	            System.out.println("Perfil cargado exitosamente.");
+	        } else {
+	            // Si el perfil no existía, se crea uno nuevo
+	            perfil.guardarPerfil();
+	            System.out.println("Perfil creado exitosamente.");
+	        }
+	    } else if (opcion == 2) {
+	        System.out.print("Ingresa el nombre del perfil a cargar (con extensión .txt): ");
+	        String nombrePerfil = scanner.next();
+	        Perfil perfil = new Perfil(nombrePerfil);
+	        perfil.cargarPerfil(); // No es necesario agregar la extensión .txt al cargar
+	        System.out.println("Perfil cargado exitosamente.");
+	    } else {
+	        System.out.println("Opción no válida. Por favor, seleccione 1 o 2.");
+	        gestionarPerfiles(); // Vuelve a mostrar el menú de perfiles
+	    }
+	}
+	
 }
